@@ -1,0 +1,8 @@
+build/
+kernel
+kernel.asm
+.gdbinit
+*.o
+*.d
+*.lst
+.idea/
