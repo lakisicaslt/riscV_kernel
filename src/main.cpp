@@ -1,5 +1,6 @@
 #include "hw.h"
 #include "syscall_c.hpp"
+#include "MemoryAllocator.hpp"
 
 void userMain() __attribute__((weak));
 
@@ -10,6 +11,8 @@ void userMain() {
 
 
 int main() {
+
+    MemoryAllocator::init();
     userMain();
 
     volatile uint32* shutdown = (uint32*)0x100000;
