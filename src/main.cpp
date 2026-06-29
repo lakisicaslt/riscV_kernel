@@ -9,15 +9,17 @@ void userMain() {
     // Javni testovi će obezbediti svoju verziju ove funkcije.
 }
 
+static void shutdown() {
+    volatile uint32* shutdownAddress = (uint32*)0x100000;
+    *shutdownAddress = 0x5555;
+}
 
 int main() {
-
     MemoryAllocator::init();
+
     userMain();
 
-    volatile uint32* shutdown = (uint32*)0x100000;
-    *shutdown = 0x5555;
+    shutdown();
 
     return 0;
 }
-

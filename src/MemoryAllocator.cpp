@@ -36,45 +36,57 @@ void MemoryAllocator::init() {
 
 
 void* MemoryAllocator::mem_alloc(size_t blocks) {
-    if(blocks ==0) return 0;
+    if (blocks == 0) return 0;
 
-    if(!initialized) init();
+    if (!initialized) init();
 
     // +1 blok je header koji čuvamo ispred korisničke memorije.
+    // Korisniku vraćamo adresu posle tog header bloka.
     size_t neededBlocks = blocks + 1;
 
-    for(FreeMemory* curr = head; curr != 0; curr = curr->next){
-        if(curr->size < neededBlocks){
+    for (FreeMemory* curr = head; curr != 0; curr = curr->next) {
+        if (curr->size < neededBlocks) {
             continue;
         }
 
         size_t remainingBlocks = curr->size - neededBlocks;
 
-        //segment odgovara zahtevu
-        if(remainingBlocks == 0){
+        // Slučaj 1: segment je tačno veličine koja nam treba.
+        // Uzimamo ceo segment iz free liste.
+        if (remainingBlocks == 0) {
             removeFromFreeList(curr);
 
             curr->size = neededBlocks;
 
-            return (void*)((char*) curr + MEM_BLOCK_SIZE);
+            return (void*)((char*)curr + MEM_BLOCK_SIZE);
         }
 
-        FreeMemory* leftOver = (FreeMemory*)((char*) curr + neededBlocks * MEM_BLOCK_SIZE);
-        if(leftOver->prev !=0){
+        // Slučaj 2: segment je veći od potrebnog.
+        // Prvi deo dajemo korisniku, ostatak ostaje u free listi.
+        FreeMemory* leftOver = (FreeMemory*)((char*)curr + neededBlocks * MEM_BLOCK_SIZE);
+
+        leftOver->size = remainingBlocks;
+        leftOver->prev = curr->prev;
+        leftOver->next = curr->next;
+
+        if (leftOver->prev != 0) {
             leftOver->prev->next = leftOver;
         } else {
-            head =  leftOver;
-
+            head = leftOver;
         }
-        if(leftOver->next!=0){
+
+        if (leftOver->next != 0) {
             leftOver->next->prev = leftOver;
         }
-        curr->size = neededBlocks;
 
-        return (void*)((char*) curr + MEM_BLOCK_SIZE);
+        curr->size = neededBlocks;
+        curr->next = 0;
+        curr->prev = 0;
+
+        return (void*)((char*)curr + MEM_BLOCK_SIZE);
     }
 
-    //nema dovoljno mem
+    // Nema dovoljno memorije.
     return 0;
 }
 
