@@ -1,6 +1,7 @@
 #include "hw.h"
 #include "syscall_c.hpp"
 #include "MemoryAllocator.hpp"
+#include "RiscV.hpp"
 
 void userMain() __attribute__((weak));
 
@@ -16,6 +17,8 @@ static void shutdown() {
 
 int main() {
     MemoryAllocator::init();
+
+    RiscV::w_stvec((uint64)&RiscV::supervisorTrap);
 
     userMain();
 
